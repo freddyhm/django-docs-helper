@@ -6,7 +6,7 @@ authors = [
     {name = "Freddy Hidalgo-Monchez",email = "freddy.hidalgo.m@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.13, <4~"
+requires-python = ">=3.13, <4"
 dependencies = [
     "beautifulsoup4 (>=4.12.3,<5.0.0)",
     "langchain (>=0.3.14,<0.4.0)",
@@ -17,7 +17,8 @@ dependencies = [
     "langchain-chroma (>=0.2.0,<0.3.0)",
     "python-dotenv (>=1.0.1,<2.0.0)",
     "black (>=24.10.0,<25.0.0)",
-    "isort (>=5.13.2,<6.0.0)"
+    "isort (>=5.13.2,<6.0.0)",
+    "langchain-openai (==0.2.12)"
 ]
 
 
