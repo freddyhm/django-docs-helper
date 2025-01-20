@@ -1,5 +1,5 @@
-from graph.constants import RETRIEVE
-from graph.nodes.retrieve import retrieve
+from graph.constants import GRADE_DOCUMENTS, RETRIEVE
+from graph.nodes import retrieve, grade_documents
 from graph.state import GraphState
 from langgraph.graph import END, StateGraph
 from dotenv import load_dotenv
@@ -9,8 +9,10 @@ load_dotenv()
 workflow = StateGraph(GraphState)
 
 workflow.add_node(RETRIEVE, retrieve)
+workflow.add_node(GRADE_DOCUMENTS, grade_documents)
 
-workflow.add_edge(RETRIEVE, END)
+workflow.add_edge(RETRIEVE, GRADE_DOCUMENTS)
+workflow.add_edge(GRADE_DOCUMENTS, END)
 
 workflow.set_entry_point(RETRIEVE)
 
