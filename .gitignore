@@ -2,6 +2,10 @@
 .env
 .env.*
 
+# Chroma
+.chroma/
+chroma*
+
 # Python
 .jython_cache/*
 __pycache__/
@@ -38,3 +42,5 @@ ENV/
 *.swp
 *.swo
 .DS_Store
+.chroma/chroma.sqlite3
+.chroma/chroma.sqlite3

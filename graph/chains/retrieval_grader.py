@@ -19,7 +19,7 @@ system = """You are a grader assessing relevance of a retrieved document to a us
 
 grade_prompt = ChatPromptTemplate.from_messages([
     ("system", system),
-    ("human", "Retrieved document: \n\n {question} \n\n User question: {question}"),
+    ("human", "Retrieved document: \n\n {document} \n\n User question: {question}"),
 ])
 
 retrieval_grader = grade_prompt | structured_llm_grader

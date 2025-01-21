@@ -13,7 +13,7 @@ def grade_documents(state: GraphState) -> dict[str, Any]:
 
     for doc in documents:
         score = retrieval_grader.invoke(
-            {"question": question, "document": doc}
+            {"question": question, "document": doc.page_content}
         )
         grade = score.binary_score
         if grade.lower() == "yes":

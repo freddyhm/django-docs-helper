@@ -4,4 +4,4 @@ from graph.graph import app
 load_dotenv()
 
 if __name__ == "__main__":
-    app.invoke(input={"question": "How to query a model?"})
+    app.invoke(input={"question": "How to make pizza?"})
