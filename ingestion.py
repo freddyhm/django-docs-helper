@@ -7,9 +7,7 @@ from langchain_community.vectorstores import FAISS
 load_dotenv()
 
 urls = [
-    "https://lilianweng.github.io/posts/2023-06-23-agent/",
-    "https://lilianweng.github.io/posts/2023-03-15-prompt-engineering/",
-    "https://lilianweng.github.io/posts/2023-10-25-adv-attack-llm/",
+    "https://docs.djangoproject.com/en/3.2/topics/db/queries/",
 ]
 
 docs = [WebBaseLoader(url).load() for url in urls]

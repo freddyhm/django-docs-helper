@@ -8,24 +8,27 @@ load_dotenv()
 
 
 def test_retrival_grader_answer_yes() -> None:
-    question = "agent memory"
+    question = "How to make queries?"
     docs = retriever.invoke(question)
     doc_txt = docs[1].page_content
 
+    # grade relevant question related to relevant doc
     res: GradeDocuments = retrieval_grader.invoke(
-        {"question": question, "document": doc_txt}
+        {"question": "How to save changes to objects?", "document": doc_txt}
     )
 
     assert res.binary_score == "yes"
 
 
 def test_retrival_grader_answer_no() -> None:
-    question = "agent memory"
+    # retrieve relevant docs
+    question = "How to make queries?"
     docs = retriever.invoke(question)
     doc_txt = docs[1].page_content
 
+    # grade irrelevant question related to relevant doc
     res: GradeDocuments = retrieval_grader.invoke(
-        {"question": "how to make pizza?", "document": doc_txt}
+        {"question": "What is agent memory?", "document": doc_txt}
     )
 
     assert res.binary_score == "no"
