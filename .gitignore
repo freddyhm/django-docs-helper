@@ -43,4 +43,4 @@ ENV/
 *.swo
 .DS_Store
 .chroma/chroma.sqlite3
-.chroma/chroma.sqlite3
+faiss_index_react/

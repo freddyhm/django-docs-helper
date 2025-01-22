@@ -1,8 +1,8 @@
 from dotenv import load_dotenv
-from langchain_chroma import Chroma
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
 
 load_dotenv()
 
@@ -16,28 +16,15 @@ docs = [WebBaseLoader(url).load() for url in urls]
 docs_list = [item for sublist in docs for item in sublist]
 
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=250, chunk_overlap=0)
-docs_split = text_splitter.split_documents(docs_list)
+docs_split = text_splitter.split_documents(documents=docs_list)
 
-collection_name = "agent-docs"
-persist_directory = "./.chroma"
+# collection_name = "agent-docs"
+# persist_directory = "./.chroma"
 embeddings = OpenAIEmbeddings()
 
-chroma_db = Chroma(
-    collection_name=collection_name,
-    persist_directory=persist_directory,
-    embedding_function=embeddings,
-)
+vectorstore = FAISS.from_documents(docs_split, embeddings)
+vectorstore.save_local("./faiss_index_react")
 
-# if len(chroma_db.get()['documents']) == 0:
-# vectorstore = Chroma.from_documents(
-#     documents=docs_split,
-#     collection_name=collection_name,
-#     embedding=embeddings,
-#     persist_directory=persist_directory,
-# )
+new_vectorstore = FAISS.load_local("./faiss_index_react", embeddings, allow_dangerous_deserialization=True)
 
-retriever = Chroma(
-    collection_name=collection_name,
-    persist_directory=persist_directory,
-    embedding_function=embeddings,
-).as_retriever()
+retriever = new_vectorstore.as_retriever()
