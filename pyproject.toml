@@ -5,7 +5,7 @@ description = ""
 authors = [
     {name = "Freddy Hidalgo-Monchez",email = "freddy.hidalgo.m@gmail.com"}
 ]
-requires-python = "^3.13.1"
+requires-python = "^3.12.4"
 dependencies = [
     "beautifulsoup4 (>=4.12.3,<5.0.0)",
     "langchain (>=0.3.14,<0.4.0)",
