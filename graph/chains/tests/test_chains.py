@@ -45,10 +45,9 @@ def test_generation_chain() -> None:
 def test_hallucination_grader_answer_yes() -> None:
     question = "How to make queries?"
     docs = retriever.invoke(question)
-    generation = generation_chain.invoke({"context": docs, "question": question})
 
     res: GradeHallucination = hallucination_grader.invoke(
-        {"documents": docs, "generation": generation}
+        {"documents": docs, "generation": generation_chain.invoke({"context": docs, "question": question})}
     )
 
     assert res.binary_score == "yes"
@@ -61,7 +60,7 @@ def test_hallucination_grader_answer_no() -> None:
     res: GradeHallucination = hallucination_grader.invoke(
         {
             "documents": docs,
-            "generation": "In order to make pizza we need to first start with the dough",
+            "generation":  "In order to make pizza we need to first start with the dough",
         }
     )
 

@@ -8,19 +8,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def grade_generation_grouned_in_documents_and_question(state: GraphState) -> bool:
+def grade_generation_grouned_in_documents_and_question(state: GraphState) -> str:
     print("--CHECK HALLUCINATIONS--")
     question = state["question"]
     documents = state["documents"]
     generation = state["generation"]
 
-    score = hallucination_grader.invoke({"documents": documents, "generation": generation})
+    hallucination_score = hallucination_grader.invoke({"documents": documents, "generation": generation})
 
-    if hallucination_grade := score.binary_score:
+    if hallucination_score.binary_score == "yes":
         print("---DECISION: GENERATION IS GROUNDED IN DOCUMENTS---")
         print("---GRADE GENERATION vs QUESTION---")
-        score = answer_grader.invoke({"question": question, "generation": generation})
-        if answer_grade := score.binary_score:
+        answer_score = answer_grader.invoke({"question": question, "generation": generation})
+        if answer_score.binary_score:
             print("---DECISION: GENERATION ADDRESSES QUESTION---")
             return "useful"
         else:
@@ -51,4 +51,6 @@ workflow.set_entry_point(RETRIEVE)
 
 app = workflow.compile()
 
-#app.get_graph().draw_mermaid_png(output_file_path="graph.png")
+print("ok")
+
+# app.get_graph().draw_mermaid_png(draw_mode="dark")
