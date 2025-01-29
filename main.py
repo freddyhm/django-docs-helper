@@ -4,7 +4,7 @@ from graph.graph import app
 load_dotenv()
 
 if __name__ == "__main__":
-    result = app.invoke(input={"question": "How to make pizze?"})
+    result = app.invoke(input={"question": "How to make pizza?"})
 
     print("\n=== Question ===")
     print(result["question"])

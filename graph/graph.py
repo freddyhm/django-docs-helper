@@ -1,5 +1,5 @@
 from graph.chains.answer_grader import answer_grader
-from graph.constants import GENERATE, GRADE_DOCUMENTS, RETRIEVE
+from graph.constants import ATTEMPTS_COUNTER, GENERATE, GRADE_DOCUMENTS, RETRIEVE
 from graph.nodes import generate, retrieve, grade_documents
 from graph.state import GraphState
 from graph.chains.hallucination_grader import hallucination_grader
@@ -7,6 +7,11 @@ from langgraph.graph import END, StateGraph
 from dotenv import load_dotenv
 
 load_dotenv()
+
+def update_attempts_counter(state: GraphState) -> dict:
+    """Node to increment attempts counter in state"""
+    print("--INCREMENT ATTEMPTS COUNTER--")
+    return {"attempts": state.get("attempts", 0) + 1}
 
 def grade_generation_grouned_in_documents_and_question(state: GraphState) -> str:
     print("--CHECK HALLUCINATIONS--")
@@ -30,27 +35,46 @@ def grade_generation_grouned_in_documents_and_question(state: GraphState) -> str
         print("---DECISION: GENERATION IS NOT GROUNDED IN DOCUMENTS, RE-TRY---")
         return "not supported"
 
+def check_attempts(state: GraphState) -> str:
+    """Check if max attempts reached"""
+    print("--CHECK ATTEMPTS--")
+    attempts = state.get("attempts", 0)
+    if attempts >= 3:
+        print("---MAX ATTEMPTS REACHED (3)---")
+        return "max_attempts"
+    return "continue"
+
 workflow = StateGraph(GraphState)
 
 workflow.add_node(RETRIEVE, retrieve)
 workflow.add_node(GRADE_DOCUMENTS, grade_documents)
 workflow.add_node(GENERATE, generate)
+workflow.add_node(ATTEMPTS_COUNTER, update_attempts_counter)
 
 workflow.add_edge(RETRIEVE, GRADE_DOCUMENTS)
 workflow.add_edge(GRADE_DOCUMENTS, GENERATE)
-workflow.add_edge(GENERATE, END)
 
-workflow.add_conditional_edges(GENERATE, grade_generation_grouned_in_documents_and_question,                               {
-    "not supported": GENERATE,
-    "not useful": GENERATE,
-    "useful": END,
-})
+workflow.add_conditional_edges(
+    ATTEMPTS_COUNTER,
+    check_attempts,
+    {
+        "continue": GENERATE,
+        "max_attempts": END,
+    }
 
+)
+workflow.add_conditional_edges(
+    GENERATE,
+    grade_generation_grouned_in_documents_and_question,
+    {
+        "not supported": ATTEMPTS_COUNTER,
+        "not useful": ATTEMPTS_COUNTER,
+        "useful": END,
+    }
+)
 
 workflow.set_entry_point(RETRIEVE)
 
 app = workflow.compile()
-
-print("ok")
 
 # app.get_graph().draw_mermaid_png(draw_mode="dark")
