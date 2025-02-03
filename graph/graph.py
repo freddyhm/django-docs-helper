@@ -1,12 +1,35 @@
 from graph.chains.answer_grader import answer_grader
-from graph.constants import ATTEMPTS_COUNTER, GENERATE, GRADE_DOCUMENTS, RETRIEVE
-from graph.nodes import generate, retrieve, grade_documents
+from graph.chains.router import question_router, RouteQuery
+from graph.constants import ATTEMPTS_COUNTER, GENERATE, GRADE_DOCUMENTS, RETRIEVE, WEBSEARCH
+from graph.nodes import generate, retrieve, grade_documents, web_search
 from graph.state import GraphState
 from graph.chains.hallucination_grader import hallucination_grader
 from langgraph.graph import END, StateGraph
 from dotenv import load_dotenv
 
 load_dotenv()
+
+def route_question(state: GraphState) -> str:
+    print("--ROUTE QUESTION--")
+    question = state["question"]
+    source: RouteQuery = question_router.invoke({"question": question})
+    if source.datasource == WEBSEARCH:
+        print("---ROUTE QUESTION TO WEBSEARCH---")
+        return WEBSEARCH
+    elif source.datasource == RETRIEVE:
+        print("---ROUTE QUESTION TO RAG---")
+        return RETRIEVE
+    return RETRIEVE
+
+def decide_to_generate(state: GraphState) -> str:
+    print("--ASSESS GRADED DOCUMENTS--")
+
+    if state["web_search"]:
+        print("--DECISION: NOT ALL DOCS ARE RELEVANT TO QUESTION, INCLUDE WEB SEARCH")
+        return WEBSEARCH
+    else:
+        print("--DECISION: GENERATE")
+        return RETRIEVE
 
 def update_attempts_counter(state: GraphState) -> dict:
     """Node to increment attempts counter in state"""
@@ -49,20 +72,30 @@ workflow = StateGraph(GraphState)
 workflow.add_node(RETRIEVE, retrieve)
 workflow.add_node(GRADE_DOCUMENTS, grade_documents)
 workflow.add_node(GENERATE, generate)
+workflow.add_node(WEBSEARCH, web_search)
 workflow.add_node(ATTEMPTS_COUNTER, update_attempts_counter)
+
+workflow.set_conditional_entry_point(
+    route_question,
+    {
+        WEBSEARCH: WEBSEARCH,
+        RETRIEVE: RETRIEVE,
+    }
+)
 
 workflow.add_edge(RETRIEVE, GRADE_DOCUMENTS)
 workflow.add_edge(GRADE_DOCUMENTS, GENERATE)
+workflow.add_edge(WEBSEARCH, GENERATE)
 
 workflow.add_conditional_edges(
-    ATTEMPTS_COUNTER,
-    check_attempts,
+    GRADE_DOCUMENTS,
+    decide_to_generate,
     {
-        "continue": GENERATE,
-        "max_attempts": END,
-    }
-
+        WEBSEARCH: WEBSEARCH,
+        RETRIEVE: RETRIEVE,
+    },
 )
+
 workflow.add_conditional_edges(
     GENERATE,
     grade_generation_grouned_in_documents_and_question,
@@ -73,7 +106,16 @@ workflow.add_conditional_edges(
     }
 )
 
-workflow.set_entry_point(RETRIEVE)
+workflow.add_conditional_edges(
+    ATTEMPTS_COUNTER,
+    check_attempts,
+    {
+        "continue": GENERATE,
+        "max_attempts": END,
+    }
+)
+
+workflow.add_edge(GENERATE, END)
 
 app = workflow.compile()
 

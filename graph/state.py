@@ -8,3 +8,4 @@ class GraphState(TypedDict):
     documents: list[str]
     generation: str
     attempts: int
+    web_search: bool

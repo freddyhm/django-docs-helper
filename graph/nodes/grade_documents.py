@@ -10,7 +10,7 @@ def grade_documents(state: GraphState) -> dict[str, Any]:
     documents = state["documents"]
 
     filtered_docs = []
-
+    web_search = False
     for doc in documents:
         score = retrieval_grader.invoke(
             {"question": question, "document": doc.page_content}
@@ -21,6 +21,8 @@ def grade_documents(state: GraphState) -> dict[str, Any]:
             filtered_docs.append(doc)
         else:
             print("---GRADE: DOCUMENT NOT RELEVANT---")
+            web_search = True
+            continue
 
-    return {"documents": filtered_docs, "question": question}
+    return {"documents": filtered_docs, "question": question, "web_search": web_search}
 
